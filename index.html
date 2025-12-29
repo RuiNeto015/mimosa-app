@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mimosa App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .scan-animation { animation: scan 2s linear infinite; }
+        @keyframes scan { 0%, 100% { top: 0%; opacity: 0; } 10%, 90% { opacity: 1; } 50% { top: 100%; } }
+        .pulse { animation: pulse-green 2s infinite; }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(132, 204, 22, 0); } 100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0); } }
+        
+        /* Utilitários */
+        .text-active { color: #84cc16 !important; font-weight: 700; }
+        .text-inactive { color: #9ca3af; }
+    </style>
+</head>
+<body>
+
+    <!-- MOLDURA IPHONE -->
+    <div class="relative w-full max-w-[393px] h-[852px] bg-white rounded-[3rem] shadow-2xl border-[12px] border-gray-900 overflow-hidden ring-4 ring-gray-300 flex flex-col">
+        
+        <!-- STATUS BAR -->
+        <div class="absolute top-0 w-full px-6 py-4 flex justify-between items-center z-50 text-black font-bold text-xs pointer-events-none">
+            <span>14:30</span>
+            <div class="flex gap-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10m-6 10V6m-6 14v-8"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>
+            </div>
+        </div>
+        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-full z-50 pointer-events-none"></div>
+
+        <!-- ÁREA DE CONTEÚDO -->
+        <div id="app-content" class="flex-1 overflow-y-auto hide-scrollbar bg-gray-50 pb-24 pt-12 flex flex-col relative"></div>
+
+        <!-- MENU DE NAVEGAÇÃO -->
+        <div class="absolute bottom-0 w-full bg-white border-t border-gray-100 py-2 pb-8 px-2 flex justify-between items-end z-40 text-[10px] font-medium text-gray-400">
+            <button onclick="navigate('home')" class="nav-btn w-1/5 flex flex-col items-center gap-1 transition duration-200 nav-active" id="btn-home">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Início
+            </button>
+            <button onclick="navigate('ai')" class="nav-btn w-1/5 flex flex-col items-center gap-1 transition duration-200" id="btn-ai">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 1-1.275-1.275L12 21l-1.912-5.813a2 2 0 0 1-1.275-1.275L3 12l5.813-1.912a2 2 0 0 1 1.275-1.275z"/></svg> Chef AI
+            </button>
+            <div class="w-1/5 flex justify-center relative">
+                <button onclick="navigate('scan')" class="w-16 h-16 bg-[#84cc16] rounded-full flex items-center justify-center text-white shadow-xl absolute -top-10 border-4 border-white transform active:scale-95 transition pulse hover:bg-[#65a30d]">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7V5a2 2 0 0 1 2-2h2m12 0h2a2 2 0 0 1 2 2v2m0 12v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+                </button>
+                <span class="mt-8 font-bold text-[#84cc16]">Scan</span>
+            </div>
+            <button onclick="navigate('rewards')" class="nav-btn w-1/5 flex flex-col items-center gap-1 transition duration-200" id="btn-rewards">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg> Ofertas
+            </button>
+            <button onclick="navigate('profile')" class="nav-btn w-1/5 flex flex-col items-center gap-1 transition duration-200" id="btn-profile">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Perfil
+            </button>
+        </div>
+
+        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-300 rounded-full z-50"></div>
+    </div>
+
+    <!-- SCRIPT (Lógica) -->
+    <script>
+        const STATE = { points: 250, tab: 'home', filter: 'Todos', scanStatus: 'idle' };
+
+        // --- SVGs ---
+        const svgs = {
+            logo: `<svg viewBox="0 0 200 60" class="w-32 h-auto"><text x="50%" y="35" text-anchor="middle" font-size="38" font-weight="900" fill="#211fb4" font-family="sans-serif" letter-spacing="-1">MIMOSA</text><path d="M 20 45 Q 60 25 100 45 T 180 45" stroke="#84cc16" stroke-width="4" fill="none" stroke-linecap="round" /><text x="50%" y="58" text-anchor="middle" font-size="10" fill="#6b7280" font-family="sans-serif" letter-spacing="2" font-weight="500">É PARTE DE NÓS</text></svg>`,
+            
+            mascotMo: `<div class="w-full h-full flex items-center justify-center relative"><img src="ChatGPT_Image_3_12_2025__14_58_13-removebg-preview.jpg" alt="MO" class="w-full h-full object-contain absolute top-0 left-0" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><svg viewBox="0 0 100 100" class="w-full h-full" style="display:none"><circle cx="50" cy="50" r="45" fill="#3b82f6"/><text x="50" y="65" font-size="40" text-anchor="middle">🧢</text></svg></div>`,
+            
+            mascotMiIcon: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50 5 Q95 55 90 75 Q85 100 50 95 Q15 100 10 75 Q5 55 50 5 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/><circle cx="35" cy="55" r="3" fill="black"/><circle cx="65" cy="55" r="3" fill="black"/><path d="M45 70 Q50 75 55 70" stroke="black" stroke-width="2" fill="none"/><circle cx="30" cy="25" r="5" fill="#3b82f6"/><circle cx="70" cy="25" r="5" fill="#3b82f6"/></svg>`,
+            mascotMoIcon: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50 5 Q95 55 90 75 Q85 100 50 95 Q15 100 10 75 Q5 55 50 5 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="2"/><path d="M45 15 Q75 10 85 25 Q90 30 75 35 Q55 40 45 15" fill="#1e40af"/><circle cx="35" cy="55" r="3" fill="black"/><circle cx="65" cy="55" r="3" fill="black"/><path d="M40 70 Q50 80 60 70" stroke="black" stroke-width="2" fill="none"/></svg>`,
+            mascotSaIcon: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M50 5 Q95 55 90 75 Q85 100 50 95 Q15 100 10 75 Q5 55 50 5 Z" fill="#84cc16" stroke="#65a30d" stroke-width="2"/><path d="M60 15 Q80 5 75 25 Q65 30 60 15" fill="#4d7c0f"/><circle cx="35" cy="55" r="3" fill="black"/><circle cx="65" cy="55" r="3" fill="black"/><path d="M42 65 Q50 70 58 65" stroke="black" stroke-width="2" fill="none"/></svg>`,
+            
+            mascotTrio: `<div class="flex -space-x-2 w-12 h-12 justify-center items-center"><div class="w-8 h-8 rounded-full bg-white border border-gray-200 z-10 flex items-center justify-center text-[8px] font-bold text-gray-500">MI</div><div class="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 z-20 flex items-center justify-center text-[8px] font-bold text-blue-600">MO</div><div class="w-8 h-8 rounded-full bg-green-50 border border-green-200 z-10 flex items-center justify-center text-[8px] font-bold text-green-600">SA</div></div>`,
+
+            faceMi: `<svg viewBox="0 0 100 100" class="w-14 h-14 drop-shadow-md"><circle cx="50" cy="50" r="45" fill="white" stroke="#e2e8f0" stroke-width="2"/><circle cx="35" cy="45" r="4" fill="black"/><circle cx="65" cy="45" r="4" fill="black"/><path d="M 40 65 Q 50 75 60 65" stroke="black" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="20" cy="25" r="10" fill="white" stroke="#e2e8f0" stroke-width="2"/><circle cx="80" cy="25" r="10" fill="white" stroke="#e2e8f0" stroke-width="2"/></svg>`,
+            faceMo: `<svg viewBox="0 0 100 100" class="w-14 h-14 drop-shadow-md"><circle cx="50" cy="50" r="45" fill="#3b82f6" stroke="#2563eb" stroke-width="2"/><ellipse cx="35" cy="45" rx="5" ry="7" fill="white"/><ellipse cx="65" cy="45" rx="5" ry="7" fill="white"/><circle cx="35" cy="45" r="2" fill="black"/><circle cx="65" cy="45" r="2" fill="black"/><path d="M 42 65 Q 50 60 58 65" stroke="black" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+
+            prodLactose: `<svg viewBox="0 0 100 120" class="w-full h-full"><rect x="15" y="30" width="70" height="80" rx="4" fill="#8b5cf6" fill-opacity="0.1" stroke="#8b5cf6" stroke-width="2"/><text x="50" y="60" font-size="10" text-anchor="middle" fill="#8b5cf6" font-weight="bold">PACK</text><text x="50" y="80" font-size="8" text-anchor="middle" fill="#6b7280">Sem Lactose</text></svg>`,
+            prodProteina: `<svg viewBox="0 0 100 120" class="w-full h-full"><rect x="15" y="30" width="70" height="80" rx="4" fill="#facc15" fill-opacity="0.2" stroke="#eab308" stroke-width="2"/><circle cx="50" cy="55" r="15" fill="#eab308"/><text x="50" y="58" font-size="10" text-anchor="middle" fill="white" font-weight="bold">PRO</text><text x="50" y="90" font-size="8" text-anchor="middle" fill="#854d0e">Proteína</text></svg>`,
+            prodKit: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="10" y="40" width="80" height="50" rx="4" fill="#f3f4f6" stroke="#9ca3af"/><path d="M20 30 h20 v20 h-20 z" fill="#3b82f6"/><path d="M50 30 h20 v20 h-20 z" fill="#f472b6"/><text x="50" y="70" font-size="10" text-anchor="middle" fill="#4b5563" font-weight="bold">KIT MIX</text></svg>`,
+            prodGarrafa: `<svg viewBox="0 0 100 120" class="w-full h-full"><path d="M35 15 h30 v10 h-30 z" fill="#1e40af"/><rect x="30" y="25" width="40" height="85" rx="6" fill="#3b82f6"/><text x="50" y="70" font-size="8" text-anchor="middle" fill="white" transform="rotate(-90 50 70)" font-weight="bold">MIMOSA</text></svg>`,
+            prodLancheira: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30 35 Q30 15 50 15 Q70 15 70 35" fill="none" stroke="#4d7c0f" stroke-width="4"/><rect x="15" y="35" width="70" height="55" rx="12" fill="#84cc16"/><circle cx="50" cy="62" r="14" fill="white" fill-opacity="0.3"/></svg>`,
+            prodGeneric: (color) => `<svg viewBox="0 0 100 120" class="w-full h-full"><rect x="25" y="30" width="50" height="80" rx="4" fill="white" stroke="#e5e7eb" stroke-width="2"/><rect x="30" y="50" width="40" height="40" fill="${color}" fill-opacity="0.2"/><text x="50" y="90" font-size="8" text-anchor="middle" fill="${color}" font-weight="bold">MIMOSA</text></svg>`,
+            
+            badge1: `<svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" class="w-6 h-6"><path d="M12 15l-2 5l2-1l2 1l-2-5" /><circle cx="12" cy="9" r="6" /></svg>`,
+            badge2: `<svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" class="w-6 h-6"><path d="M12 2l3 6l6 1l-4 4l1 6l-6-3l-6 3l1-6l-4-4l6-1z"/></svg>`
+        };
+
+        const SHOWCASE_PRODUCTS = [
+            { id: 1, name: "Mimosa Proteína", desc: "Mais energia", color: "#d97706", bg: "bg-orange-50", text: "text-amber-700", customImg: svgs.prodProteina },
+            { id: 2, name: "Sem Lactose", desc: "Digestão fácil", color: "#8b5cf6", bg: "bg-purple-50", text: "text-purple-700", customImg: svgs.prodLactose },
+            { id: 3, name: "Leite Cálcio+", desc: "Ossos fortes", color: "#3b82f6", bg: "bg-blue-50", text: "text-blue-700" },
+        ];
+
+        const REWARDS_DATA = [
+            { id: 'trio', title: 'Coleção MI-MO-SA', description: 'Junta os 3 amigos.', points: 800, category: 'Peluches', highlight: true, img: svgs.mascotTrio },
+            { id: 'mi', title: 'Peluche MI', description: 'A doce MI (Branca)', points: 300, category: 'Peluches', img: svgs.mascotMiIcon },
+            { id: 'mo', title: 'Peluche MO', description: 'O divertido MO (Azul)', points: 300, category: 'Peluches', img: svgs.mascotMoIcon },
+            { id: 'sa', title: 'Peluche SA', description: 'O energético SA (Verde)', points: 300, category: 'Peluches', img: svgs.mascotSaIcon },
+            { id: 'p_lactose', title: 'Pack Sem Lactose', description: 'Leite fácil de digerir', points: 120, category: 'Produtos', img: svgs.prodLactose },
+            { id: 'p_prot', title: 'Pack Proteína', description: 'Rico em proteína', points: 140, category: 'Produtos', img: svgs.prodProteina },
+            { id: 'p_kit', title: 'Kit Pequeno', description: 'Mix Leite e Iogurtes', points: 200, category: 'Produtos', img: svgs.prodKit },
+            { id: 'p_garrafa', title: 'Garrafa Reutilizável', description: 'Ecológica', points: 220, category: 'Produtos', img: svgs.prodGarrafa },
+            { id: 'p_lancheira', title: 'Lancheira Infantil', description: 'Para a escola', points: 240, category: 'Produtos', img: svgs.prodLancheira },
+        ];
+
+        // --- RENDER FUNÇÕES ---
+        
+        function renderHome() {
+            const showcaseHtml = SHOWCASE_PRODUCTS.map(prod => `
+                <div class="min-w-[140px] p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center ${prod.bg}">
+                    <div class="w-16 h-20 mb-3 flex items-center justify-center transform hover:scale-110 transition">
+                        ${prod.customImg || svgs.prodGeneric(prod.color)}
+                    </div>
+                    <p class="text-xs font-bold ${prod.text} text-center leading-tight">${prod.name}</p>
+                    <p class="text-[10px] text-gray-500 mt-1">${prod.desc}</p>
+                </div>
+            `).join('');
+
+            return `
+                <div class="px-4 fade-in">
+                    <!-- Topo -->
+                    <div class="bg-white pt-8 pb-6 px-6 rounded-b-[2.5rem] shadow-sm mb-6 relative overflow-hidden -mx-4">
+                        <div class="flex flex-col items-center mb-6 relative z-20">${svgs.logo}</div>
+                        <div class="flex justify-between items-end relative z-20">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium mb-1">Olá, Beatriz!</p>
+                                <div class="bg-[#ecfccb] px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm border border-[#d9f99d]">
+                                    <span class="text-xl font-black text-[#65a30d]">${STATE.points}</span>
+                                    <span class="text-[10px] font-bold text-[#65a30d] uppercase tracking-wide">Pontos</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full text-[#ecfccb] absolute bottom-0 left-0 opacity-40 z-10">
+                            <svg viewBox="0 0 1440 320" class="w-full h-16 object-cover" preserveAspectRatio="none"><path fill="currentColor" fill-opacity="1" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Receita -->
+                        <div onclick="navigate('ai')" class="bg-gradient-to-r from-blue-600 to-blue-400 rounded-3xl p-5 text-white shadow-md relative overflow-hidden cursor-pointer active:scale-95 transition">
+                            <div class="relative z-10 w-2/3">
+                                <span class="bg-white/20 text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm">Receita do Chef</span>
+                                <h3 class="text-lg font-bold mt-1 leading-tight">Batido de Morango e Cálcio</h3>
+                                <button class="mt-3 bg-white text-blue-600 px-4 py-1.5 rounded-full text-[10px] font-bold shadow-sm">Ver Receita</button>
+                            </div>
+                            <div class="absolute -right-4 -bottom-4 w-24 h-24">${svgs.mascotMo}</div>
+                        </div>
+
+                        <!-- Missões -->
+                        <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                             <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">🏆 Missão Mensal</h3>
+                                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">2/5</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-4 font-medium">Compra produtos <span class="text-[#211fb4] font-bold">Cálcio+</span> e ganha o dobro!</p>
+                            <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-[#84cc16] h-2 rounded-full w-2/5"></div></div>
+                        </div>
+
+                        <!-- Showcase Novidades -->
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm mb-3 px-1">Novidades Mimosa</h3>
+                            <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar -mx-4 px-4">
+                                ${showcaseHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRewards() {
+            let filtered = REWARDS_DATA;
+            if(STATE.filter !== 'Todos') {
+                filtered = REWARDS_DATA.filter(r => r.category === STATE.filter);
+            }
+
+            const buttonsHtml = ['Todos', 'Peluches', 'Produtos'].map(f => 
+                `<button onclick="setFilter('${f}')" class="px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition ${STATE.filter === f ? 'bg-[#84cc16] text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200'}">${f}</button>`
+            ).join('');
+
+            let highlightHtml = '';
+            if (STATE.filter === 'Todos' || STATE.filter === 'Peluches') {
+                highlightHtml = `
+                <div class="mb-6 relative overflow-hidden rounded-2xl p-6 text-white shadow-xl" style="background: linear-gradient(135deg, #211fb4 0%, #3b82f6 50%, #84cc16 100%);">
+                    <div class="absolute -top-10 -left-10 w-40 h-40 bg-white opacity-20 rounded-full blur-3xl z-0"></div>
+                    <div class="relative z-10 pr-16">
+                       <div class="inline-block border border-white/30 rounded-lg px-2 py-0.5 mb-2 text-[10px] bg-white/10 backdrop-blur-sm">Destaque</div>
+                       <h3 class="text-xl font-bold mb-1">Coleção MI-MO-SA</h3>
+                       <p class="text-xs opacity-90 mb-4 leading-relaxed max-w-[80%]">Junta os 3 amigos.</p>
+                       <button class="bg-white text-[#211fb4] px-5 py-2 rounded-full font-bold text-xs hover:bg-gray-100 shadow-md">Ver Detalhes</button>
+                    </div>
+                    <div class="absolute -bottom-2 -right-2 flex -space-x-2 opacity-90">
+                        <div class="w-16 h-16 bg-white rounded-full border-2 border-white/50">${svgs.faceMi}</div>
+                        <div class="w-16 h-16 bg-blue-200 rounded-full border-2 border-white/50 -ml-6">${svgs.faceMo}</div>
+                    </div>
+                </div>`;
+            }
+
+            const listHtml = filtered.filter(r => !r.highlight).map(item => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border ${item.category === 'Peluches' ? 'border-blue-100' : 'border-gray-100'} flex items-center gap-4 mb-3">
+                    <div class="w-16 h-16 bg-white rounded-xl flex items-center justify-center p-1 relative shadow-sm border border-gray-50 overflow-hidden">
+                        ${item.img || svgs.prodGeneric('#3b82f6')}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-gray-800 text-sm">${item.title}</h3>
+                        <p class="text-[10px] text-gray-500 mb-1">${item.category}</p>
+                        <div class="flex items-center gap-1 text-[#84cc16] font-black text-sm mt-1">★ ${item.points} pts</div>
+                    </div>
+                    <button class="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-[10px] font-bold hover:bg-[#84cc16] hover:text-white transition">Trocar</button>
+                </div>`
+            ).join('');
+
+            return `
+                <div class="px-4 pt-4 fade-in">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-2">Ofertas</h1>
+                    <p class="text-sm text-gray-500 mb-6">Troca os teus pontos por prémios.</p>
+                    ${highlightHtml}
+                    <div class="flex gap-2 mb-6 overflow-x-auto hide-scrollbar">${buttonsHtml}</div>
+                    <div>${listHtml}</div>
+                </div>
+            `;
+        }
+
+        function renderAI() {
+             return `
+                <div class="flex flex-col h-full fade-in bg-white">
+                    <div class="px-6 py-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-20">
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">👨‍🍳 Chef Mimosa</h1>
+                            <p class="text-xs text-gray-500">O teu assistente de culinária.</p>
+                        </div>
+                         <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.912 5.813a2 2 0 0 1 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 1-1.275-1.275L12 21l-1.912-5.813a2 2 0 0 1-1.275-1.275L3 12l5.813-1.912a2 2 0 0 1 1.275-1.275z"/></svg>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-4 space-y-6 bg-gray-50 overflow-y-auto">
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 bg-white border border-gray-200 rounded-full p-1 overflow-hidden shrink-0 flex items-center justify-center">${svgs.mascotMo}</div>
+                            <div class="flex flex-col gap-1 max-w-[80%]">
+                                <span class="text-[10px] text-gray-400 ml-1">Chef Mimosa</span>
+                                <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 text-sm text-gray-600 shadow-sm">
+                                    Olá Beatriz! 👋<br>Sou o teu Chef pessoal. Diz-me que ingredientes tens no frigorífico e eu crio uma receita especial para ti!
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                             <p class="text-[10px] text-gray-400 font-bold uppercase mb-2 ml-1">Sugestões rápidas</p>
+                             <div class="flex flex-wrap gap-2">
+                                <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs text-blue-600 font-medium hover:bg-blue-50 transition">🍓 Morangos e Leite</button>
+                                <button class="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs text-blue-600 font-medium hover:bg-blue-50 transition">🥞 Ovos e Farinha</button>
+                             </div>
+                        </div>
+                    </div>
+                    <!-- Input Area Fixa ao Fundo do Container, acima da navegação -->
+                    <div class="p-4 bg-white border-t border-gray-100 mt-auto">
+                        <div class="bg-gray-100 rounded-full flex items-center px-4 py-3 gap-3">
+                            <input type="text" placeholder="Escreve os ingredientes..." class="bg-transparent flex-1 outline-none text-sm text-gray-700 placeholder-gray-400">
+                            <button class="w-8 h-8 bg-[#211fb4] rounded-full flex items-center justify-center text-white shadow-md hover:bg-blue-700 transition">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderProfile() {
+            return `
+                <div class="p-6 pt-10 fade-in">
+                    <div class="flex items-center space-x-4 mb-8">
+                        <div class="w-16 h-16 bg-gradient-to-br from-lime-200 to-lime-400 rounded-full flex items-center justify-center text-lime-800 font-bold text-2xl shadow-md border-4 border-white">M</div>
+                        <div><h2 class="text-xl font-bold text-gray-800">Beatriz Ferreira</h2><p class="text-lime-600 font-medium text-xs">Guardião do Bem-Estar 🌟</p></div>
+                    </div>
+                    <div class="bg-gray-900 text-white rounded-2xl p-6 mb-8 shadow-lg relative overflow-hidden">
+                        <div class="relative z-10 flex justify-between items-center mb-4">
+                            <div><p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Saldo Atual</p><span class="text-4xl font-black text-[#84cc16]">${STATE.points}</span></div>
+                            <div class="h-12 w-12 bg-white/10 rounded-full flex items-center justify-center text-2xl">★</div>
+                        </div>
+                        <div class="w-full bg-gray-700 h-2 rounded-full overflow-hidden"><div class="bg-gradient-to-r from-[#84cc16] to-green-400 w-3/4 h-full"></div></div>
+                        <p class="text-[10px] text-gray-400 mt-2">Faltam 250 pts para Nível Ouro</p>
+                    </div>
+                    <div class="mb-8">
+                        <h3 class="font-bold text-gray-800 text-sm mb-3">As tuas Medalhas</h3>
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center gap-1"><div class="w-14 h-14 bg-yellow-100 rounded-full flex items-center justify-center border border-yellow-200 shadow-sm">${svgs.badge1}</div><span class="text-[10px] font-bold text-gray-500">Iniciante</span></div>
+                            <div class="flex flex-col items-center gap-1"><div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center border border-blue-200 shadow-sm">${svgs.badge2}</div><span class="text-[10px] font-bold text-gray-500">Explorador</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        ${['Histórico de Pontos', 'Favoritos', 'Definições'].map(i => `<button class="w-full bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between transition hover:bg-gray-50 text-sm font-semibold text-gray-700">${i} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>`).join('')}
+                    </div>
+                </div>`;
+        }
+
+        function renderScan() {
+             if(STATE.scanStatus === 'scanning') return `<div class="h-full bg-black flex flex-col items-center justify-center text-white relative fade-in"><div class="absolute top-16 left-0 w-full text-center"><h2 class="font-bold text-lg">A Ler...</h2><p class="text-xs opacity-70">Mantém estável</p></div><div class="w-64 h-64 border-2 border-[#84cc16] rounded-3xl relative overflow-hidden"><div class="absolute top-0 left-0 w-full h-1 bg-[#84cc16] shadow-[0_0_20px_#84cc16] scan-animation"></div></div><button onclick="closeScan()" class="mt-12 bg-white/10 px-6 py-2 rounded-full text-sm font-bold backdrop-blur-md border border-white/10">Cancelar</button></div>`;
+            if(STATE.scanStatus === 'success') return `<div class="h-full bg-white flex flex-col items-center justify-center p-8 text-center fade-in pb-24"><div class="w-24 h-24 bg-[#ecfccb] rounded-full flex items-center justify-center mb-6 text-[#84cc16] text-4xl">✓</div><h2 class="text-2xl font-black text-gray-800 mb-2">Sucesso!</h2><p class="text-gray-600 mb-8 text-sm">Recebeste <span class="font-bold text-[#84cc16]">+8 pontos</span>.</p><p class="text-sm font-bold mb-4">Leite Meio-Gordo 1 L</p><button onclick="closeScan()" class="bg-gray-900 text-white font-bold py-3 px-10 rounded-full shadow-lg">Continuar</button></div>`;
+            return `<div class="h-full bg-black flex flex-col items-center justify-center text-white relative fade-in"><div class="absolute top-16 left-0 w-full text-center"><h2 class="font-bold text-lg">Digitalizar</h2><p class="text-xs opacity-70">Enquadra o código QR</p></div><div class="w-64 h-64 border-2 border-white/20 rounded-3xl relative overflow-hidden flex items-center justify-center bg-white/5"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-50"><path d="M3 7V5a2 2 0 0 1 2-2h2m12 0h2a2 2 0 0 1 2 2v2m0 12v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg></div><button onclick="handleScan()" class="mt-8 bg-[#84cc16] hover:bg-[#65a30d] text-white px-8 py-3 rounded-full text-sm font-bold shadow-lg transition transform active:scale-95 flex items-center gap-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2m12 0h2a2 2 0 0 1 2 2v2m0 12v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg> Simular Leitura</button><button onclick="navigate('home')" class="mt-4 text-xs font-bold text-white/50">Voltar</button></div>`;
+        }
+
+        // --- SISTEMA DE NAVEGAÇÃO ---
+        function navigate(tab) {
+            STATE.tab = tab;
+            const contentDiv = document.getElementById('app-content');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-active');
+                btn.classList.add('text-inactive');
+            });
+            const activeBtn = document.getElementById('btn-' + tab);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-inactive');
+                activeBtn.classList.add('text-active');
+            }
+
+            if(tab === 'home') contentDiv.innerHTML = renderHome();
+            else if(tab === 'scan') contentDiv.innerHTML = renderScan();
+            else if(tab === 'rewards') contentDiv.innerHTML = renderRewards();
+            else if(tab === 'ai') contentDiv.innerHTML = renderAI();
+            else if(tab === 'profile') contentDiv.innerHTML = renderProfile();
+        }
+
+        function setFilter(f) { STATE.filter = f; document.getElementById('app-content').innerHTML = renderRewards(); }
+        function handleScan() { STATE.scanStatus = 'scanning'; document.getElementById('app-content').innerHTML = renderScan(); setTimeout(() => { STATE.scanStatus = 'success'; STATE.points += 8; document.getElementById('app-content').innerHTML = renderScan(); }, 2000); }
+        function closeScan() { STATE.scanStatus = 'idle'; navigate('home'); }
+
+        // Iniciar
+        navigate('home');
+    </script>
+</body>
+</html>
